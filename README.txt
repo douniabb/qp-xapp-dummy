@@ -12,6 +12,8 @@ database_dummy.py:
 	* An anomalous UEID is specified as the input (sent from TS) for the prediction. Default: "Car-2"
 	* Dataset is 'valid.csv' split into train ("train") and test ("liveUE")
 	* Test data is filtered by the ueid.
+	* write_prediction(df): dump prediction results into a .csv
+	
 	
 
 main_dummy.py:
@@ -25,6 +27,8 @@ main_dummy.py:
 	      4. inp = Read 11 samples of cellid from “liveUE” 
 	      5. train(data,cid,i) -> VAR model generated for each cid
 	      6. Forecast the time series (inp) using the saved model for the next nobs samples -> forecast(inp,mcid,nobs)
+	      7. Validation of the predictions with RMSE error.
+	      
 	
 	
 qptrain_VAR.py - train(db,cid,i)
