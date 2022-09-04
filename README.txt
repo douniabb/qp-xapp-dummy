@@ -1,11 +1,20 @@
 # qp-xapp-dummy
 Mirror of the ric-app/qp repo for Dummy evaluation (modified codes according to E release)
+Uses only UE data instead of Cell data. Predicts 'throughput' instead of 'pdcpBytes'.
 
 NEW FILES / MODIFICATIONS
+To obtain throughput values for neighboring cells -> Random Forest Regressor (RF) predictor (explained in 'tp_model/tptrain.ipynb')
+To predict throughput -> VAR model (or ARIMA)
+
+
+database_dummy.py:
+	* Dataset is 'valid.csv' split into train ("train") and test ("liveUE")
+	* An anomalous UEID is specified to be the input for the prediction. Default: "Car-2"
 
 main_dummy.py:
 * start(): Populate DB – Use DUMMY (‘qp/valid.csv’)
-* If Model is not present in the current path, run train() to train the model for the prediction.
+	* If 'RF' is not present in the current path, run tp_train() to train the model that obtains throughput for nb cells.
+	* Obtain anomalous UEID input from database --> pred_msg = predict(ue)
 
 
 
