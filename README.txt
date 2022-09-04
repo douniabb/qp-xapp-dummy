@@ -5,6 +5,7 @@ Uses only UE data instead of Cell data. Predicts 'throughput' instead of 'pdcpBy
 NEW FILES / MODIFICATIONS
 To obtain throughput values for neighboring cells -> Random Forest Regressor (RF) predictor (explained in 'tp_model/tptrain.ipynb')
 To predict throughput -> VAR (or ARIMA) time series ML predictor
+Interpolation added before VAR to get regular time series (sample ever 10ms)
 
 
 database_dummy.py:
@@ -23,12 +24,13 @@ main_dummy.py:
 	3. Loop in cell_list: Read data for each cell id (cid)
 	      4. inp = Read 11 samples of cellid from “liveUE” 
 	      5. train(data,cid,i) -> VAR model generated for each cid
-	      6. Forecast the time series (inp) using the saved model -> forecast(inp,mcid,1)
+	      6. Forecast the time series (inp) using the saved model for the next nobs samples -> forecast(inp,mcid,nobs)
 	
 	
-qptrain_VAR.py :  train(db,cid,i)
+qptrain_VAR.py - train(db,cid,i)
   1. Reads "train" historical data of the cid (in ueid)
-  2. Call process() to forecast the downlink and uplink (pdcpBytes) of the input cell id ('C2/B13').
+  2. Call process() to filter 'throughput' and 'measTimeStampRF' + 10 ms data interpolation.
+  	* For nb cells (i != 0) --> tp_predict (df,i) : apply 'RF' model to obtain throughput column as 'tput_nbi'
   3. make_stationary() -> Check for Stationarity and make the Time Series Stationary 
       a. Perform ADF (ADFuller) test to check stationarity  -> adfuller_test(column) 
       b. If the columns is stationary, perform 1st differencing and return data.
@@ -37,6 +39,13 @@ qptrain_VAR.py :  train(db,cid,i)
   6. Save model with the cell id name.
 
 
+prediction.py - forecast(inp, mcid, i, nobs): Forecast the (past) time series (from "liveUE") using saved model.
+nobs is the number of observations that want to get predicted in the future (every 10 ms)
+Default: nobs = 5
+  1. Call process() to filter columns, obtain troughput for nb cells and apply data interpolation.
+  2. Make stationary.
+  3. pred = var_model.forecast(data,nobs)
+  4. Set index timestamp for the predictions.
 
 # ==================================================================================
 Original E release branch - Predicts pdcpBytes only for a nb cell 'c2/B13' with VAR model.
