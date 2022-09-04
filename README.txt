@@ -4,17 +4,37 @@ Uses only UE data instead of Cell data. Predicts 'throughput' instead of 'pdcpBy
 
 NEW FILES / MODIFICATIONS
 To obtain throughput values for neighboring cells -> Random Forest Regressor (RF) predictor (explained in 'tp_model/tptrain.ipynb')
-To predict throughput -> VAR model (or ARIMA)
+To predict throughput -> VAR (or ARIMA) time series ML predictor
 
 
 database_dummy.py:
+	* An anomalous UEID is specified as the input (sent from TS) for the prediction. Default: "Car-2"
 	* Dataset is 'valid.csv' split into train ("train") and test ("liveUE")
-	* An anomalous UEID is specified to be the input for the prediction. Default: "Car-2"
+	* Test data is filtered by the ueid.
+	
 
 main_dummy.py:
 * start(): Populate DB – Use DUMMY (‘qp/valid.csv’)
 	* If 'RF' is not present in the current path, run tp_train() to train the model that obtains throughput for nb cells.
 	* Obtain anomalous UEID input from database --> pred_msg = predict(ue)
+* predict(payload) : Function that forecast the time series
+	1. from payload -> ueid
+	2. Extract neighbors cell id -> cell_list = cells(ueid)
+	3. Loop in cell_list: Read data for each cell id (cid)
+	      4. inp = Read 11 samples of cellid from “liveUE” 
+	      5. train(data,cid,i) -> VAR model generated for each cid
+	      6. Forecast the time series (inp) using the saved model -> forecast(inp,mcid,1)
+	
+	
+qptrain_VAR.py :  train(db,cid,i)
+  1. Reads "train" historical data of the cid (in ueid)
+  2. Call process() to forecast the downlink and uplink (pdcpBytes) of the input cell id ('C2/B13').
+  3. make_stationary() -> Check for Stationarity and make the Time Series Stationary 
+      a. Perform ADF (ADFuller) test to check stationarity  -> adfuller_test(column) 
+      b. If the columns is stationary, perform 1st differencing and return data.
+  4. Make a VAR (Vector Autoregression) model.
+  5. Call the fit method with the desired lag order 10.
+  6. Save model with the cell id name.
 
 
 
