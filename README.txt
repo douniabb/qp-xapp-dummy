@@ -31,7 +31,7 @@ main_dummy.py:
 	      
 	
 	
-qptrain_VAR.py - train(db,cid,i)
+qptrain.py - train(db,cid,i)
   1. Reads "train" historical data of the cid (in ueid)
   2. Call process() to filter 'throughput' and 'measTimeStampRF' + 10 ms data interpolation.
   	* For nb cells (i != 0) --> tp_predict (df,i) : apply 'RF' model to obtain throughput column as 'tput_nbi'
